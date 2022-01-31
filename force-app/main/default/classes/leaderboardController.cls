@@ -1,14 +1,17 @@
-public class leaderboardController {
+public class leaderboardController { 
 
     @AuraEnabled(cacheable=true)
     public static List<Date> currentFY(){
         List<Date> returnList = new List<Date>();
         Date filterEndDate, filterStartDate;
-        String periodQuery = 'SELECT StartDate, EndDate FROM Period WHERE Id != NULL ';
-        periodQuery += ' AND Type=\'Year\' AND StartDate = THIS_FISCAL_YEAR';
-        Period currentPeriod = Database.query(periodQuery);
-        filterStartDate = Date.parse(currentPeriod.StartDate.format());
-        filterEndDate = Date.parse(currentPeriod.EndDate.format());
+        List<String> periodFields = new List<String>{ 'StartDate', 'EndDate', 'Type'};
+        if(LeaderboardUtil.isCRUDAllowed('Period', periodFields, LeaderboardUtil.OPERATION_SELECT)){
+            String periodQuery = 'SELECT StartDate, EndDate FROM Period WHERE Id != NULL ';
+            periodQuery += ' AND Type=\'Year\' AND StartDate = THIS_FISCAL_YEAR';
+            Period currentPeriod = Database.query(periodQuery);
+            filterStartDate = Date.parse(currentPeriod.StartDate.format());
+            filterEndDate = Date.parse(currentPeriod.EndDate.format());
+        }
         returnList.add(filterStartDate);
         returnList.add(filterEndDate);
         return returnList;
@@ -25,15 +28,18 @@ public class leaderboardController {
             '5' => 'th'
         };
 
-        Period currentPeriod = [SELECT Number FROM Period WHERE Type='Quarter' AND StartDate = THIS_FISCAL_QUARTER];
-        String currentQuarter = String.valueOf(currentPeriod.Number);
-        for(Integer i=1; (i<=currentPeriod.Number && i<=4); i++) {  
-            if(String.valueOf(i)==currentQuarter){
-                returnList.put(i+dateEnds.get(String.valueOf(i))+ ' FQ'+ ' - (current)', String.valueOf(i));
-            }else{
-                returnList.put(i+dateEnds.get(String.valueOf(i))+ ' FQ', String.valueOf(i));
-            }             
-        }        
+        List<String> periodFields = new List<String>{ 'StartDate', 'Type', 'Number'};
+        if(LeaderboardUtil.isCRUDAllowed('Period', periodFields, LeaderboardUtil.OPERATION_SELECT)){
+            Period currentPeriod = [SELECT Number FROM Period WHERE Type='Quarter' AND StartDate = THIS_FISCAL_QUARTER];
+            String currentQuarter = String.valueOf(currentPeriod.Number);
+            for(Integer i=1; (i<=currentPeriod.Number && i<=4); i++) {  
+                if(String.valueOf(i)==currentQuarter){
+                  returnList.put(i+dateEnds.get(String.valueOf(i))+ ' FQ'+ ' - (current)', String.valueOf(i));
+               }else{
+                    returnList.put(i+dateEnds.get(String.valueOf(i))+ ' FQ', String.valueOf(i));
+                }             
+            } 
+        }       
         return returnList; 
     }
 
@@ -41,12 +47,15 @@ public class leaderboardController {
     public static List<Date> targetQuarterRange(String targetQuarterSelected){
         List<Date> returnList = new List<Date>();
         Date filterEndDate, filterStartDate;
-        String periodQuery = 'SELECT StartDate, EndDate FROM Period WHERE Id != NULL ';
-        Integer periodNumber = Integer.valueOf(targetQuarterSelected);
-        periodQuery += ' AND Type=\'Quarter\' AND StartDate = THIS_FISCAL_YEAR AND Number =: periodNumber';
-        Period currentPeriod = Database.query(periodQuery);
-        filterStartDate = Date.parse(currentPeriod.StartDate.format());
-        filterEndDate = Date.parse(currentPeriod.EndDate.format());
+        List<String> periodFields = new List<String>{ 'StartDate', 'EndDate', 'Type', 'Number'};
+        if(LeaderboardUtil.isCRUDAllowed('Period', periodFields, LeaderboardUtil.OPERATION_SELECT)){
+            String periodQuery = 'SELECT StartDate, EndDate FROM Period WHERE Id != NULL ';
+            Integer periodNumber = Integer.valueOf(targetQuarterSelected);
+            periodQuery += ' AND Type=\'Quarter\' AND StartDate = THIS_FISCAL_YEAR AND Number =: periodNumber';
+            Period currentPeriod = Database.query(periodQuery);
+            filterStartDate = Date.parse(currentPeriod.StartDate.format());
+            filterEndDate = Date.parse(currentPeriod.EndDate.format());
+        }
         returnList.add(filterStartDate);
         returnList.add(filterEndDate);
         return returnList;
@@ -55,9 +64,12 @@ public class leaderboardController {
     @AuraEnabled(cacheable=true)
     public static Map<String,String> awardFYDateRanges(){
         Map<String,String> returnList = new Map<String,String>();
-        List<Period> periods = [SELECT StartDate, EndDate FROM Period WHERE Type = 'Year' AND (StartDate = LAST_N_YEARS:10 OR StartDate = THIS_FISCAL_YEAR)];
-        for(Period tempPeriod : periods) { 
-            returnList.put(tempPeriod.StartDate.format()+' - '+tempPeriod.EndDate.format(), tempPeriod.StartDate+'='+tempPeriod.EndDate);
+        List<String> periodFields = new List<String>{ 'StartDate', 'EndDate', 'Type'};
+        if(LeaderboardUtil.isCRUDAllowed('Period', periodFields, LeaderboardUtil.OPERATION_SELECT)){
+            List<Period> periods = [SELECT StartDate, EndDate FROM Period WHERE Type = 'Year' AND (StartDate = LAST_N_YEARS:10 OR StartDate = THIS_FISCAL_YEAR)];
+            for(Period tempPeriod : periods) { 
+                returnList.put(tempPeriod.StartDate.format()+' - '+tempPeriod.EndDate.format(), tempPeriod.StartDate+'='+tempPeriod.EndDate);
+            }
         }
         return returnList;
     }
@@ -68,9 +80,12 @@ public class leaderboardController {
         String[] tempDates = awardFYSelected.split('=');
         Date tempStartDate = Date.valueOf(tempDates[0]);
         Date tempEndDate = Date.valueOf(tempDates[1]);       
-        List<Period> periods = [SELECT StartDate, EndDate, Number FROM Period WHERE Type = 'Quarter' AND (StartDate >= :tempStartDate AND EndDate <= :tempEndDate) AND StartDate <= THIS_FISCAL_QUARTER];        
-        for(Period tempPeriod : periods) {            
-            returnList.put(tempPeriod.StartDate.format()+' - '+tempPeriod.EndDate.format(), tempPeriod.StartDate+'='+tempPeriod.EndDate);
+        List<String> periodFields = new List<String>{ 'StartDate', 'EndDate', 'Type', 'Number'};
+        if(LeaderboardUtil.isCRUDAllowed('Period', periodFields, LeaderboardUtil.OPERATION_SELECT)){
+            List<Period> periods = [SELECT StartDate, EndDate, Number FROM Period WHERE Type = 'Quarter' AND (StartDate >= :tempStartDate AND EndDate <= :tempEndDate) AND StartDate <= THIS_FISCAL_QUARTER];        
+            for(Period tempPeriod : periods) {            
+                returnList.put(tempPeriod.StartDate.format()+' - '+tempPeriod.EndDate.format(), tempPeriod.StartDate+'='+tempPeriod.EndDate);
+            }
         }
         return returnList;
     }
