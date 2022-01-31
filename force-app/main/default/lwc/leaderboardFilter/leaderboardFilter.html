@@ -1,0 +1,105 @@
+<template>
+  <lightning-card>
+    <lightning-layout multiple-rows="">
+      <lightning-layout-item size="12" padding="around-small">
+        <div class="slds-text-align_center">
+        <lightning-radio-group 
+          name="radioGroup"
+          options={options} 
+          value={radioValue}
+          onchange={radioValueChange}
+          type="button"></lightning-radio-group>
+        </div>
+      </lightning-layout-item>  
+    </lightning-layout>
+
+    <lightning-card if:true={TargetsSelected}>
+      <div class="slds-align_absolute-center" style="height:5rem">
+      <lightning-layout>
+        <lightning-layout-item flexibility="auto" padding="around-small">
+          <lightning-combobox
+            name="targetSelect"
+            value={targetValue}
+            options={targetsOptions}
+            onchange={handleTargetChange}
+          ></lightning-combobox>
+        </lightning-layout-item>
+        <lightning-layout-item if:true={selectQuarter} flexibility="auto" padding="around-small">
+            <lightning-combobox
+              id="targetQuarterCombobox"
+              name="quarterSelect"
+              value={selectedQuarter}
+              placeholder="Select Quarter"
+              options={quartersOptions}
+              onchange={handleQuarterChange}
+            ></lightning-combobox>
+          </lightning-layout-item>
+        <lightning-layout-item flexibility="auto" padding="around-small">
+            <lightning-input onchange={handleFromDateChange} type="date" name="dateInput1" disabled={nonCustom} max={toDate} value={fromDate} ></lightning-input>
+        </lightning-layout-item>
+        <lightning-layout-item flexibility="auto, no-grow" padding="around-small">
+            
+            <div class="custom-box slds-text-align_center">
+                <br/>
+                <p><lightning-formatted-text value="To" ></lightning-formatted-text></p>
+            </div>
+        </lightning-layout-item>
+        <lightning-layout-item flexibility="auto" padding="around-small">
+            <lightning-input onchange={handleToDateChange} type="date" name="dateInput2" disabled={nonCustom} min={fromDate} value={toDate} ></lightning-input>
+        </lightning-layout-item>
+        <lightning-layout-item flexibility="auto, no-grow" padding="around-small">
+            <br/>          
+            <lightning-button-icon 
+                icon-name="utility:search"  
+                variant="container" 
+                alternative-text="Search" 
+                onclick={searchTarget}
+                title="Search Target"></lightning-button-icon>
+        </lightning-layout-item>
+      </lightning-layout>
+      </div>
+    </lightning-card>
+
+    <lightning-card if:false={TargetsSelected}>
+      <div class="slds-align_absolute-center" style="height:5rem">
+        <lightning-layout>
+            <lightning-layout-item flexibility="auto" padding="around-small">
+                <lightning-combobox
+                    name="awardSelect"
+                    value={awardValue}
+                    options={awardsOption}
+                    onchange={handleAwardChange}
+                ></lightning-combobox>
+            </lightning-layout-item>
+            <lightning-layout-item flexibility="auto" padding="around-small">
+                <lightning-combobox
+                    name="SelectFY"
+                    value={awardFY}
+                    placeholder="Select FY"
+                    options={awardsFYOption}
+                    onchange={handleAwardFYChange}
+                ></lightning-combobox>
+            </lightning-layout-item>
+            <lightning-layout-item if:true={awardQuarter} flexibility="auto" padding="around-small">
+                <lightning-combobox
+                    name="SelectFQ"
+                    value={awardFQ}
+                    placeholder="Select FQ"
+                    options={awardsFQOption}
+                    onchange={handleAwardFQChange}
+                ></lightning-combobox>
+            </lightning-layout-item>
+            <lightning-layout-item flexibility="auto, no-grow" padding="around-small">
+                <br/>          
+                <lightning-button-icon 
+                    icon-name="utility:search"  
+                    variant="container" 
+                    alternative-text="Search" 
+                    onclick={searchAward}
+                    title="Search Award"></lightning-button-icon>
+            </lightning-layout-item>
+        </lightning-layout>
+        </div>
+    </lightning-card>
+  </lightning-card>
+</template>
